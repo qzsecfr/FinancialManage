@@ -54,12 +54,12 @@ int Command::commandDistribute(const vector<string>& args)
     //      logout
     //      pswd $oldpswd$ $newpswd$
     //      name $newname$
-    //      deluser
+    //      deluser $pswd$
     //  Trans:
     //      income $y/m/d-h:m:s$ $amount$ $comment$
     //      expense $y/m/d-h:m:s$ $amount$ $comment$
     //      deltrans $no.$
-    //      modtrans $no.$ $y/m/f-h:m:s$ $amount$ $comment$
+    //      modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-INCOME, 1-EXPENSE]
     if (args.empty())
     {
         return -1;
@@ -92,3 +92,109 @@ int Command::commandDistribute(const vector<string>& args)
 
     return 0;
 }
+
+int Command::execLogin(const vector<string>& args)
+{
+    // login $name$ $pswd$
+    if (args.size() < 3)
+    {
+        return -1;
+    }
+    
+    return g_user->login(args[1], args[2]);
+}
+
+int Command::execLogout(const vector<string>& args)
+{
+    return g_user->logout();
+}
+
+int Command::execChangePswd(const vector<string>& args)
+{
+    // pswd $oldpswd$ $newpswd$
+    if (args.size() < 3)
+    {
+        return -1;
+    }
+
+    return g_user->changePswd(args[1], args[2]);
+}
+
+int Command::execChangeName(const vector<string>& args)
+{
+    // name $newname$
+    if (args.size() < 2)
+    {
+        return -1;
+    }
+
+    return g_user->changeName(args[1]);
+}
+
+int Command::execDelUser(const vector<string>& args)
+{
+    //  deluser $pswd$
+    if (args.size() < 2)
+    {
+        return -1;
+    }
+
+    return g_user->delUser(args[1]);
+}
+
+int Command::execAddTrans(const vector<string>& args, TransType transtype)
+{
+    // income $y/m/d-h:m:s$ $amount$ $comment$
+    // expense $y/m/d-h:m:s$ $amount$ $comment$
+    if (args.size() < 4)
+    {
+        return -1;
+    }
+    UTC utc;
+    if (!string2UTC(args[1], utc))
+    {
+        return 0;
+    }
+
+    Transaction trans;
+    trans.type = transtype;
+    UTC2MJD(utc, trans.mjd);
+    trans.amount = atof(args[2].c_str());
+    trans.comment = args[3];
+
+    return g_trans->addTrans(trans);
+}
+
+int Command::execDelTrans(const vector<string>& args)
+{
+    // deltrans $no.$
+    if (args.size() < 2)
+    {
+        return -1;
+    }
+
+    return g_trans->delTrans(atoi(args[1].c_str()));
+}
+
+int Command::execModTrans(const vector<string>& args)
+{
+    // modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-INCOME, 1-EXPENSE]
+    if (args.size() < 6)
+    {
+        return -1;
+    }
+    UTC utc;
+    if (!string2UTC(args[2], utc) || atoi(args[3].c_str()) < 0 || atoi(args[3].c_str()) > 1)
+    {
+        return 0;
+    }
+
+    Transaction trans;
+    trans.type = TransType(atoi(args[3].c_str()));
+    UTC2MJD(utc, trans.mjd);
+    trans.amount = atof(args[4].c_str());
+    trans.comment = args[5];
+    return g_trans->modTrans(atoi(args[1].c_str()), trans);
+}
+
+Command* comman = new Command();

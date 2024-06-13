@@ -42,3 +42,4 @@ public:
     int processCommand(string command);
 };
 
+static Command* command;

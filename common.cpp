@@ -48,3 +48,10 @@ int UTC2MJD(UTC utc, double& mjd)
 	}
 	return 1;
 }
+
+int string2UTC(string str, UTC& utc)
+{
+	// $y/m/d-h:m:s$
+	return sscanf(str.c_str(), "%d/%d/%d-%d:%d:%lf",
+		&utc.year, &utc.month, &utc.day, &utc.hour, &utc.minute, &utc.second) == 6;
+}
