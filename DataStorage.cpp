@@ -1,5 +1,4 @@
 #include "DataStorage.h"
-#include "common.h"
 
 #include <fstream>
 #include <iostream>
@@ -132,6 +131,19 @@ int DataStorage::verifyUserPswd(string name, string pswd)
     return 0;
 }
 
+int DataStorage::getUserUid(string name)
+{
+    int uid = -1;
+    if (!name2uid(name, uid))
+    {
+        return -1; // no user
+    }
+    else
+    {
+        return uid;
+    }
+}
+
 int DataStorage::addUser(string name, string pswd)
 {
     int uid = -1;
@@ -180,6 +192,46 @@ int DataStorage::delUser(string name, string pswd)
     return 1;
 }
 
+int DataStorage::modifyName(string oldName, string newName)
+{
+    int uid = -1;
+    if (!name2uid(oldName, uid))
+    {
+        return -1; // no user
+    }
+    for (auto user : user_info)
+    {
+        if (user.uid == uid)
+        {
+            user.name = newName;
+        }
+    }
+    uid_map[uid] = newName;
+    return 1;
+}
+
+int DataStorage::modifyPswd(string name, string oldPswd, string newPswd)
+{
+    int uid = -1;
+    if (!name2uid(name, uid))
+    {
+        return -1; // no user
+    }
+    for (auto user : user_info)
+    {
+        if (user.uid == uid)
+        {
+            if (strcmp(oldPswd.c_str(), user.pswd.c_str()) == 0)
+            {
+                user.pswd = newPswd;
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+
 int DataStorage::transactionLog(const Transaction& log)
 {
     if (!uid_map.count(log.uid))
@@ -204,6 +256,30 @@ int DataStorage::getUserTransactions(int uid, Transactions& transactionlist)
     return 1;
 }
 
+int DataStorage::delTransaction(int uid, int index)
+{
+    if (!uid_map.count(uid) || index < 0 || index >= transactions[uid].size())
+    {
+        return 0;
+    }
+    transactions[uid].erase(transactions[uid].begin() + index);
+    return 1;
+}
+
+int DataStorage::modifyTransaction(int uid, int index, const Transaction& newTrans)
+{
+    if (!uid_map.count(uid) || index < 0 || index >= transactions[uid].size())
+    {
+        return 0;
+    }
+    auto iter = transactions[uid].begin() + index;
+    iter->mjd = newTrans.mjd;
+    iter->amount = newTrans.amount;
+    iter->comment = newTrans.comment;
+    iter->type = newTrans.type;
+    return 1;
+}
+
 int DataStorage::backupDataFile(string filename)
 {
     int ret = readDataFile(filename);
@@ -223,3 +299,5 @@ int DataStorage::restoreDataFile(string filename)
     }
     return ret;
 }
+
+DataStorage *g_dataStorage = new DataStorage();

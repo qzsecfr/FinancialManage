@@ -1,32 +1,8 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <map>
+
+#include "common.h"
 
 using namespace std;
-
-enum TransType
-{
-    INCOME = 0,
-    EXPENSE
-};
-
-struct UserInfo
-{
-    int uid; // 内部使用，由uidgenerater生成
-    string name; // 外部使用, 不允许出现半角逗号
-    string pswd;
-};
-
-struct Transaction
-{
-    int uid;
-    double mjd;
-    TransType type;
-    double amount;
-    string comment;
-};
-typedef vector<Transaction> Transactions;
 
 class DataStorage
 {
@@ -46,14 +22,21 @@ public:
     ~DataStorage();
 
     int verifyUserPswd(string name, string pswd);
+    int getUserUid(string name);
 
     int addUser(string name, string pswd);
     int delUser(string name, string pswd);
+    int modifyName(string oldName, string newName);
+    int modifyPswd(string name, string oldPswd, string newPswd);
 
     int transactionLog(const Transaction& transaction);
     int getUserTransactions(int uid, Transactions& transactions);
+
+    int delTransaction(int uid, int index);
+    int modifyTransaction(int uid, int index, const Transaction& newTrans);
 
     int backupDataFile(string filename);
     int restoreDataFile(string filename);
 };
 
+static DataStorage *g_dataStorage;
