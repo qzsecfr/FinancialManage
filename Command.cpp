@@ -59,7 +59,7 @@ int Command::commandDistribute(const vector<string>& args)
     //      income $y/m/d-h:m:s$ $amount$ $comment$
     //      expense $y/m/d-h:m:s$ $amount$ $comment$
     //      deltrans $no.$
-    //      modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-INCOME, 1-EXPENSE]
+    //      modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-IN, 1-OUT]
     if (args.empty())
     {
         return -1;
@@ -79,9 +79,9 @@ int Command::commandDistribute(const vector<string>& args)
     case COMTYPE::DELUSER:
         return execDelUser(args);
     case COMTYPE::INCOME:
-        return execAddTrans(args, TransType::INCOME);
+        return execAddTrans(args, TransType::IN);
     case COMTYPE::EXPENSE:
-        return execAddTrans(args, TransType::EXPENSE);
+        return execAddTrans(args, TransType::OUT);
     case COMTYPE::DELTRANS:
         return execDelTrans(args);
     case COMTYPE::MODTRANS:
@@ -178,7 +178,7 @@ int Command::execDelTrans(const vector<string>& args)
 
 int Command::execModTrans(const vector<string>& args)
 {
-    // modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-INCOME, 1-EXPENSE]
+    // modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-IN, 1-OUT]
     if (args.size() < 6)
     {
         return -1;
@@ -196,5 +196,3 @@ int Command::execModTrans(const vector<string>& args)
     trans.comment = args[5];
     return g_trans->modTrans(atoi(args[1].c_str()), trans);
 }
-
-Command* g_comman = new Command();

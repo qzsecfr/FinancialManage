@@ -1,8 +1,11 @@
 #pragma once
+#pragma warning(disable:4996)
 
 #include <string>
 #include <vector>
 #include <map>
+
+#define _CRT_SECURE_NO_WARNINGS
 
 using namespace std;
 
@@ -18,8 +21,8 @@ struct UTC
 
 enum TransType
 {
-    INCOME = 0,
-    EXPENSE
+    IN = 0,
+    OUT
 };
 
 struct UserInfo

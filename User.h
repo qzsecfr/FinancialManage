@@ -25,4 +25,4 @@ public:
     int delUser(string pswd);
 };
 
-static User* g_user;
+static User* g_user = new User();

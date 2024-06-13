@@ -39,4 +39,4 @@ public:
     int restoreDataFile(string filename);
 };
 
-static DataStorage *g_dataStorage;
+static DataStorage* g_dataStorage = new DataStorage();

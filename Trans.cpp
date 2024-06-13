@@ -51,5 +51,3 @@ int Trans::modTrans(int index, const Transaction& newTrans)
     refreshTransactionList();
     return ret;
 }
-
-Trans* g_trans = new Trans();

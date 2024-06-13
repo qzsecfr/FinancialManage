@@ -20,4 +20,4 @@ public:
 
 };
 
-static Trans* g_trans;
+static Trans* g_trans = new Trans();

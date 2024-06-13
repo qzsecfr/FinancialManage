@@ -299,5 +299,3 @@ int DataStorage::restoreDataFile(string filename)
     }
     return ret;
 }
-
-DataStorage *g_dataStorage = new DataStorage();

@@ -69,5 +69,3 @@ int User::delUser(string pswd)
         return g_dataStorage->delUser(name, pswd);
     }
 }
-
-User* g_user = new User();
