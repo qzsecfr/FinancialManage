@@ -1,7 +1,7 @@
 #include "DataStorage.h"
 
 #include <fstream>
-#include <iostream>
+#include <algorithm>
 
 int DataStorage::readDataFile(string filename)
 {
@@ -9,10 +9,19 @@ int DataStorage::readDataFile(string filename)
     // $USR,uid(int),name(string),pswd(string)
     // $TRA,uid(int),mjd(double),type(int),amount(double),comment(string)
     fstream file;
+    bool fileOpen = false;
     file.open(filename, ios::in);
-    if (!file.is_open())
+    fileOpen = file.is_open();
+    if (!fileOpen)
     {
-        return 0; // file cannot be openned
+        if (strcmp(filename.c_str(), ".\\finacialdata.dat") == 0)
+        {
+            fstream newFile(filename, ios::out);
+            newFile.close();
+            file.open(filename, ios::in);
+            fileOpen = file.is_open();
+        }
+        if (!fileOpen) return 0; // file cannot be openned
     }
 
     user_info.clear();
@@ -96,7 +105,7 @@ int DataStorage::uid2name(int uid, string& name)
     else return 0;
 }
 
-DataStorage::DataStorage()
+DataStorage::DataStorage() : user_info(vector<UserInfo>()), uid_map(map <int, string>()), transactions(map <int, Transactions>())
 {
     int ret = readDataFile();
     if (!ret)
@@ -112,6 +121,7 @@ DataStorage::~DataStorage()
     {
         std::cerr << "data storage save failed." << std::endl;
     }
+    delete g_dataStorage;
 }
 
 int DataStorage::verifyUserPswd(string name, string pswd)
@@ -256,6 +266,18 @@ int DataStorage::getUserTransactions(int uid, Transactions& transactionlist)
     return 1;
 }
 
+int DataStorage::reorderTransactions(int uid)
+{
+    // 按照时间先后排序
+    if (!uid_map.count(uid))
+    {
+        return 0; // no user;
+    }
+
+    std::sort(transactions[uid].begin(), transactions[uid].end(), compare);
+    return 1;
+}
+
 int DataStorage::delTransaction(int uid, int index)
 {
     if (!uid_map.count(uid) || index < 0 || index >= transactions[uid].size())
@@ -298,4 +320,21 @@ int DataStorage::restoreDataFile(string filename)
         std::cerr << "data storage initial failed." << std::endl;
     }
     return ret;
+}
+
+DataStorage* getGlobalDataStorage()
+{
+    if (g_dataStorage == nullptr)
+    {
+        g_dataStorage = new DataStorage();
+    }
+    return g_dataStorage;
+}
+
+void deleteGlobalData()
+{
+    if (g_dataStorage != nullptr)
+    {
+        delete g_dataStorage;
+    }
 }

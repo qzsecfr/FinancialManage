@@ -11,8 +11,8 @@ private:
     bool logged;
 
 public:
-    User() : uid(-1), name(""), logged(false) {}
-    ~User() = default;
+    User() : uid(-1), name(""), logged(false) { g_dataStorage = getGlobalDataStorage(); }
+    ~User() { deleteGlobalData(); }
 
     int login(string name, string pswd);
     int logout();
@@ -25,4 +25,8 @@ public:
     int delUser(string pswd);
 };
 
-static User* g_user = new User();
+User* g_user = nullptr;
+
+User* getGlobalUser();
+
+void deleteGlobalUser();

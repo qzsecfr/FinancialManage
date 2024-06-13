@@ -55,3 +55,8 @@ int string2UTC(string str, UTC& utc)
 	return sscanf(str.c_str(), "%d/%d/%d-%d:%d:%lf",
 		&utc.year, &utc.month, &utc.day, &utc.hour, &utc.minute, &utc.second) == 6;
 }
+
+bool compare(const Transaction& a, const Transaction& b)
+{
+	return a.mjd < b.mjd; // °´ÕÕ mjd ÉýÐòÅÅÁÐ
+}

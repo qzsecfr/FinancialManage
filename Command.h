@@ -17,6 +17,7 @@ enum COMTYPE
     EXPENSE,
     DELTRANS,
     MODTRANS,
+    ACQUIRE,
 };
 
 class Command
@@ -35,11 +36,13 @@ private:
     int execAddTrans(const vector<string>& args, TransType transtype);
     int execDelTrans(const vector<string>& args);
     int execModTrans(const vector<string>& args);
+    int execAcquireTrans(const vector<string>& args);
+
+    void printTransactions(const Transactions& translist);
 
 public:
-    Command() {}
+    Command() { g_user = getGlobalUser(); g_trans = getGlobalTrans(); };
+    ~Command() { deleteGlobalUser(); deleteGlobalTrans(); }
 
     int processCommand(string command);
 };
-
-static Command* g_command = new Command();

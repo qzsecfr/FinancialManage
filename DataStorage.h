@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "common.h"
 
 using namespace std;
@@ -11,8 +12,8 @@ private:
     map <int, string> uid_map; // uid-->name;
     map <int, Transactions> transactions; // uid-->transaction list
 
-    int readDataFile(string filename = "./finacialdata.dat");
-    int writeDataFile(string filename = "./finacialdata.dat");
+    int readDataFile(string filename = ".\\finacialdata.dat");
+    int writeDataFile(string filename = ".\\finacialdata.dat");
 
     int name2uid(string name, int& uid);
     int uid2name(int uid, string& name);
@@ -31,6 +32,7 @@ public:
 
     int transactionLog(const Transaction& transaction);
     int getUserTransactions(int uid, Transactions& transactions);
+    int reorderTransactions(int uid);
 
     int delTransaction(int uid, int index);
     int modifyTransaction(int uid, int index, const Transaction& newTrans);
@@ -39,4 +41,7 @@ public:
     int restoreDataFile(string filename);
 };
 
-static DataStorage* g_dataStorage = new DataStorage();
+DataStorage* g_dataStorage = nullptr;
+
+DataStorage* getGlobalDataStorage();
+void deleteGlobalData();

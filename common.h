@@ -47,3 +47,5 @@ int uidGenerator();
 int MJD2UTC(double mjd, UTC& utc);
 int UTC2MJD(UTC utc, double& mjd);
 int string2UTC(string str, UTC& utc);
+
+bool compare(const Transaction& a, const Transaction& b);

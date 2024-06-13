@@ -20,11 +20,11 @@ int User::logout()
     return 1;
 }
 
-int User::changePswd(string prePswd, string newPswd)
+int User::changePswd(string prePswd, string newPswd) // -2: not logged, -1: no user, 0: wrong pswd, 1: success
 {
     if (!logged)
     {
-        return 0;
+        return -2;
     }
     else
     {
@@ -32,11 +32,11 @@ int User::changePswd(string prePswd, string newPswd)
     }
 }
 
-int User::changeName(string newName)
+int User::changeName(string newName) // -2: not logged, -1: no user, 1: success
 {
     if (!logged)
     {
-        return 0;
+        return -2;
     }
     else
     {
@@ -48,7 +48,7 @@ int User::getUserInfo(int& uid, string& name)
 {
     if (!logged)
     {
-        return 0;
+        return -2;
     }
     else
     {
@@ -58,14 +58,33 @@ int User::getUserInfo(int& uid, string& name)
     }
 }
 
-int User::delUser(string pswd)
+int User::delUser(string pswd) // -2: not logged, -1: no user, 1: success
 {
     if (!logged)
     {
-        return 0;
+        return -2;
     }
     else
     {
-        return g_dataStorage->delUser(name, pswd);
+        int ret = g_dataStorage->delUser(name, pswd);
+        logout();
+        return ret;
+    }
+}
+
+User* getGlobalUser()
+{
+    if (g_user == nullptr)
+    {
+        g_user = new User();
+    }
+    return g_user;
+}
+
+void deleteGlobalUser()
+{
+    if (g_user != nullptr)
+    {
+        delete g_user;
     }
 }
