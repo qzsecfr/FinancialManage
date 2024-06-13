@@ -197,4 +197,4 @@ int Command::execModTrans(const vector<string>& args)
     return g_trans->modTrans(atoi(args[1].c_str()), trans);
 }
 
-Command* comman = new Command();
+Command* g_comman = new Command();

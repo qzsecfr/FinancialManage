@@ -42,4 +42,4 @@ public:
     int processCommand(string command);
 };
 
-static Command* command;
+static Command* g_command;
