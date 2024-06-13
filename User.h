@@ -25,8 +25,15 @@ public:
     int delUser(string pswd);
 };
 
-User* g_user = nullptr;
+static User* g_user = nullptr;
 
-User* getGlobalUser();
+static User* getGlobalUser()
+{
+    if (g_user == nullptr)
+    {
+        g_user = new User();
+    }
+    return g_user;
+}
 
 void deleteGlobalUser();

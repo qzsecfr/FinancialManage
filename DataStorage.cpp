@@ -322,15 +322,6 @@ int DataStorage::restoreDataFile(string filename)
     return ret;
 }
 
-DataStorage* getGlobalDataStorage()
-{
-    if (g_dataStorage == nullptr)
-    {
-        g_dataStorage = new DataStorage();
-    }
-    return g_dataStorage;
-}
-
 void deleteGlobalData()
 {
     if (g_dataStorage != nullptr)

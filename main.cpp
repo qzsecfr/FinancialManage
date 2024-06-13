@@ -18,7 +18,10 @@ string help_info = "\
 
 int main()
 {
-    Command* command = new Command();
+    Command command;
+    g_dataStorage = getGlobalDataStorage();
+    g_user = getGlobalUser();
+    g_trans = getGlobalTrans();
 
     cout << "欢迎使用个人财务管理系统！" << endl;
     cout << "请输入命令或帮助（help）来获取帮助。输入exit或quit退出系统。" << endl;
@@ -39,9 +42,8 @@ int main()
         }
         else
         {
-            command->processCommand(input);
+            command.processCommand(input);
         }
     }
-    delete command;
     return 1;
 }

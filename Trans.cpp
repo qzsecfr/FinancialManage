@@ -16,6 +16,7 @@ int Trans::refreshTransactionList()
     }
     else
     {
+        g_dataStorage = getGlobalDataStorage();
         return g_dataStorage->getUserTransactions(uid, transactionList);
     }
 }
@@ -26,6 +27,7 @@ int Trans::addTrans(const Transaction& trans) // -1: not logged, 0: no user, 1: 
     {
         return -1;
     }
+    g_dataStorage = getGlobalDataStorage();
     int ret = g_dataStorage->transactionLog(trans);
     g_dataStorage->reorderTransactions(uid);
     refreshTransactionList();
@@ -42,6 +44,7 @@ int Trans::delTrans(int index) // -1: not logged, 0: index exceeds range, 1: suc
     {
         return 0;
     }
+    g_dataStorage = getGlobalDataStorage();
     int ret = g_dataStorage->delTransaction(uid, index);
     g_dataStorage->reorderTransactions(uid);
     refreshTransactionList();
@@ -58,6 +61,7 @@ int Trans::modTrans(int index, const Transaction& newTrans) // -1: not logged, 0
     {
         return 0;
     }
+    g_dataStorage = getGlobalDataStorage();
     int ret = g_dataStorage->modifyTransaction(uid, index, newTrans);
     g_dataStorage->reorderTransactions(uid);
     refreshTransactionList();
@@ -72,15 +76,6 @@ int Trans::acquire(Transactions& transList) // -1: not logged, 1: success
     }
     transList = transactionList;
     return 1;
-}
-
-Trans* getGlobalTrans()
-{
-    if (g_trans == nullptr)
-    {
-        g_trans = new Trans;
-    }
-    return g_trans;
 }
 
 void deleteGlobalTrans()

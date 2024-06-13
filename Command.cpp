@@ -119,7 +119,7 @@ int Command::execLogin(const vector<string>& args)
         cerr << "µÇÂ¼ÃüÁî´íÎó£¬Ó¦Îª£ºlogin $name$ $pswd$" << endl;
         return -1;
     }
-    
+    g_user = getGlobalUser();
     int ret = g_user->login(args[1], args[2]); // -1:no user, 0:fail, 1:success
     if (ret == -1)
     {
@@ -136,14 +136,20 @@ int Command::execLogin(const vector<string>& args)
     int uid = -1;
     string tmp;
     g_user->getUserInfo(uid, tmp);
-    g_trans->setUid(uid);
+    if (uid != -1)
+    {
+        g_trans = getGlobalTrans();
+        g_trans->setUid(uid);
+    }
     return ret;
 }
 
 int Command::execLogout(const vector<string>& args)
 {
+    g_user = getGlobalUser();
     int ret = g_user->logout();
     cout << "ÒÑµÇ³ö£¡" << endl;
+    g_trans = getGlobalTrans();
     g_trans->setUid(-1);
     return ret;
 }
@@ -157,6 +163,7 @@ int Command::execChangePswd(const vector<string>& args)
         return -1;
     }
 
+    g_user = getGlobalUser();
     int ret = g_user->changePswd(args[1], args[2]); // -2: not logged, -1: no user, 0: wrong pswd, 1: success
     if (ret == -2)
     {
@@ -182,6 +189,7 @@ int Command::execChangeName(const vector<string>& args) // -2: not logged, -1: n
         return -1;
     }
 
+    g_user = getGlobalUser();
     int ret = g_user->changeName(args[1]);
     if (ret == -2)
     {
@@ -203,6 +211,7 @@ int Command::execDelUser(const vector<string>& args) // -2: not logged, -1: no u
         return -1;
     }
 
+    g_user = getGlobalUser();
     int ret = g_user->delUser(args[1]);
     if (ret == -2)
     {
@@ -240,6 +249,7 @@ int Command::execAddTrans(const vector<string>& args, TransType transtype)
     trans.amount = atof(args[2].c_str());
     trans.comment = args[3];
 
+    g_trans = getGlobalTrans();
     int ret = g_trans->addTrans(trans); // -1: not logged, 0: no user, 1: success
     if (ret == -1)
     {
@@ -261,6 +271,7 @@ int Command::execDelTrans(const vector<string>& args)
         return -1;
     }
 
+    g_trans = getGlobalTrans();
     int ret = g_trans->delTrans(atoi(args[1].c_str()) - 1); // -1: not logged, 0: index exceeds range, 1: success
     if (ret == -1)
     {
@@ -297,6 +308,7 @@ int Command::execModTrans(const vector<string>& args)
     UTC2MJD(utc, trans.mjd);
     trans.amount = atof(args[4].c_str());
     trans.comment = args[5];
+    g_trans = getGlobalTrans();
     int ret = g_trans->modTrans(atoi(args[1].c_str() - 1), trans); // -1: not logged, 0: index exceeds range, 1: success
     if (ret == -1)
     {
@@ -316,6 +328,7 @@ int Command::execModTrans(const vector<string>& args)
 int Command::execAcquireTrans(const vector<string>& args)
 {
     Transactions translist;
+    g_trans = getGlobalTrans();
     int ret = g_trans->acquire(translist); // -1: not logged, 1: success
     if (ret == -1)
     {

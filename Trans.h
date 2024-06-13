@@ -19,8 +19,15 @@ public:
     int acquire(Transactions& transList);
 };
 
-Trans* g_trans = nullptr;
+static Trans* g_trans = nullptr;
 
-Trans* getGlobalTrans();
+static Trans* getGlobalTrans()
+{
+    if (g_trans == nullptr)
+    {
+        g_trans = new Trans;
+    }
+    return g_trans;
+}
 
 void deleteGlobalTrans();

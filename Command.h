@@ -41,8 +41,5 @@ private:
     void printTransactions(const Transactions& translist);
 
 public:
-    Command() { g_user = getGlobalUser(); g_trans = getGlobalTrans(); };
-    ~Command() { deleteGlobalUser(); deleteGlobalTrans(); }
-
     int processCommand(string command);
 };
