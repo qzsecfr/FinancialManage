@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <iomanip>
 
 int DataStorage::readDataFile(string filename)
 {
@@ -39,7 +40,7 @@ int DataStorage::readDataFile(string filename)
             user_info.push_back(info);
             if (!uid_map.count(info.uid))
             {
-                uid_map[info.uid] = info.name;
+                uid_map[info.uid] = string(info.name);
             }
         }
         else if (strncmp(tmpline.c_str(), "$TRA", 4) == 0)
@@ -69,13 +70,13 @@ int DataStorage::writeDataFile(string filename)
 
     for (const auto& user : user_info)
     {
-        file << "$USR," << user.uid << "," << user.name << "," << user.pswd << std::endl;
+        file << "$USR," << user.uid << "," << user.name.c_str() << "," << user.pswd.c_str() << std::endl;
     }
     for (const auto& transactionlist : transactions)
     {
         for (const auto& transaction : transactionlist.second)
         {
-            file << "$TRA," << transaction.uid << "," << transaction.mjd << "," << transaction.type << "," << transaction.amount << "," << transaction.comment << std::endl;
+            file << "$TRA," << transaction.uid << "," << fixed << setprecision(10) << transaction.mjd << "," << transaction.type << "," << transaction.amount << "," << transaction.comment.c_str() << std::endl;
         }
     }
 
@@ -121,7 +122,6 @@ DataStorage::~DataStorage()
     {
         std::cerr << "data storage save failed." << std::endl;
     }
-    delete g_dataStorage;
 }
 
 int DataStorage::verifyUserPswd(string name, string pswd)
@@ -173,7 +173,7 @@ int DataStorage::addUser(string name, string pswd)
     user.name = string(name);
     user.pswd = string(pswd);
     user_info.push_back(user);
-    uid_map[uid] = name;
+    uid_map[uid] = string(name);
     return 1;
 }
 
@@ -209,14 +209,14 @@ int DataStorage::modifyName(string oldName, string newName)
     {
         return -1; // no user
     }
-    for (auto user : user_info)
+    for (auto &user : user_info)
     {
         if (user.uid == uid)
         {
-            user.name = newName;
+            user.name = string(newName);
         }
     }
-    uid_map[uid] = newName;
+    uid_map[uid] = string(newName);
     return 1;
 }
 
@@ -227,13 +227,13 @@ int DataStorage::modifyPswd(string name, string oldPswd, string newPswd)
     {
         return -1; // no user
     }
-    for (auto user : user_info)
+    for (auto &user : user_info)
     {
         if (user.uid == uid)
         {
             if (strcmp(oldPswd.c_str(), user.pswd.c_str()) == 0)
             {
-                user.pswd = newPswd;
+                user.pswd = string(newPswd);
                 return 1;
             }
         }
@@ -297,7 +297,7 @@ int DataStorage::modifyTransaction(int uid, int index, const Transaction& newTra
     auto iter = transactions[uid].begin() + index;
     iter->mjd = newTrans.mjd;
     iter->amount = newTrans.amount;
-    iter->comment = newTrans.comment;
+    iter->comment = string(newTrans.comment);
     iter->type = newTrans.type;
     return 1;
 }
@@ -322,10 +322,4 @@ int DataStorage::restoreDataFile(string filename)
     return ret;
 }
 
-void deleteGlobalData()
-{
-    if (g_dataStorage != nullptr)
-    {
-        delete g_dataStorage;
-    }
-}
+DataStorage* g_dataStorage = new DataStorage();

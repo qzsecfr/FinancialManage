@@ -11,6 +11,7 @@ enum COMTYPE
     LOGOUT,
     PSWD,
     NAME,
+    NEWUSER,
     DELUSER,
 
     INCOME = 10,
@@ -31,6 +32,7 @@ private:
     int execLogout(const vector<string>& args);
     int execChangePswd(const vector<string>& args);
     int execChangeName(const vector<string>& args);
+    int execNewUser(const vector<string>& args);
     int execDelUser(const vector<string>& args);
     // Trans
     int execAddTrans(const vector<string>& args, TransType transtype);

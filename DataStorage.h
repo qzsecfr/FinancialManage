@@ -41,14 +41,13 @@ public:
     int restoreDataFile(string filename);
 };
 
-static DataStorage* g_dataStorage = nullptr;
+extern DataStorage* g_dataStorage;
 
-static DataStorage* getGlobalDataStorage()
-{
-    if (g_dataStorage == nullptr)
-    {
-        g_dataStorage = new DataStorage();
-    }
-    return g_dataStorage;
-}
-void deleteGlobalData();
+//DataStorage* getGlobalDataStorage()
+//{
+//    if (g_dataStorage == nullptr)
+//    {
+//        g_dataStorage = new DataStorage();
+//    }
+//    return g_dataStorage;
+//}

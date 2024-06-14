@@ -8,20 +8,25 @@ string help_info = "\
 \t\t登出 logout\n\
 \t\t修改密码 pswd $oldpswd$ $newpswd$\n\
 \t\t修改用户名 name $newname$\n\
+\t\t新增用户 newuser $name$ $pswd$\n\
 \t\t注销用户 deluser $pswd$\n\
-\t交易类:\
+\t交易类:\n\
 \t\t收入 income $y/m/d-h:m:s$ $amount$ $comment$\n\
 \t\t支出 expense $y/m/d-h:m:s$ $amount$ $comment$\n\
 \t\t删除交易 deltrans $no.$\n\
 \t\t修改交易 modtrans $no.$ $y/m/d-h:m:s$ $type$ $amount$ $comment$[type:0-IN, 1-OUT]\n\
 \t\t查看交易 acquire\n";
 
+extern DataStorage* g_dataStorage;
+extern User* g_user;
+extern Trans* g_trans;
+
 int main()
 {
     Command command;
-    g_dataStorage = getGlobalDataStorage();
-    g_user = getGlobalUser();
-    g_trans = getGlobalTrans();
+    //g_dataStorage = getGlobalDataStorage();
+    //g_user = getGlobalUser();
+    //g_trans = getGlobalTrans();
 
     cout << "欢迎使用个人财务管理系统！" << endl;
     cout << "请输入命令或帮助（help）来获取帮助。输入exit或quit退出系统。" << endl;
@@ -43,7 +48,24 @@ int main()
         else
         {
             command.processCommand(input);
+            int test = 0;
         }
+    }
+
+    if (g_dataStorage)
+    {
+        delete g_dataStorage;
+        g_dataStorage = nullptr;
+    }
+    if (g_user)
+    {
+        delete g_user;
+        g_user = nullptr;
+    }
+    if (g_trans)
+    {
+        delete g_trans;
+        g_trans = nullptr;
     }
     return 1;
 }

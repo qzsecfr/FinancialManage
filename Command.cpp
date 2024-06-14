@@ -51,6 +51,7 @@ COMTYPE Command::com2Type(string com)
     if (0 == strcmp(com.c_str(), "logout")) return COMTYPE::LOGOUT;
     if (0 == strcmp(com.c_str(), "pswd")) return COMTYPE::PSWD;
     if (0 == strcmp(com.c_str(), "name")) return COMTYPE::NAME;
+    if (0 == strcmp(com.c_str(), "newuser")) return COMTYPE::NEWUSER;
     if (0 == strcmp(com.c_str(), "deluser")) return COMTYPE::DELUSER;
     if (0 == strcmp(com.c_str(), "income")) return COMTYPE::INCOME;
     if (0 == strcmp(com.c_str(), "expense")) return COMTYPE::EXPENSE;
@@ -69,6 +70,7 @@ int Command::commandDistribute(const vector<string>& args)
     //      logout
     //      pswd $oldpswd$ $newpswd$
     //      name $newname$
+    //      newuser $name$ $pswd$
     //      deluser $pswd$
     //  Trans:
     //      income $y/m/d-h:m:s$ $amount$ $comment$
@@ -92,6 +94,8 @@ int Command::commandDistribute(const vector<string>& args)
         return execChangePswd(args);
     case COMTYPE::NAME:
         return execChangeName(args);
+    case COMTYPE::NEWUSER:
+        return execNewUser(args);
     case COMTYPE::DELUSER:
         return execDelUser(args);
     case COMTYPE::INCOME:
@@ -107,7 +111,7 @@ int Command::commandDistribute(const vector<string>& args)
     default:
         break;
     }
-
+    cerr << "无此命令：" << args[0].c_str() << "，请输入help查看帮助。" << endl;
     return 0;
 }
 
@@ -119,7 +123,7 @@ int Command::execLogin(const vector<string>& args)
         cerr << "登录命令错误，应为：login $name$ $pswd$" << endl;
         return -1;
     }
-    g_user = getGlobalUser();
+    //g_user = getGlobalUser();
     int ret = g_user->login(args[1], args[2]); // -1:no user, 0:fail, 1:success
     if (ret == -1)
     {
@@ -138,7 +142,7 @@ int Command::execLogin(const vector<string>& args)
     g_user->getUserInfo(uid, tmp);
     if (uid != -1)
     {
-        g_trans = getGlobalTrans();
+        //g_trans = getGlobalTrans();
         g_trans->setUid(uid);
     }
     return ret;
@@ -146,10 +150,10 @@ int Command::execLogin(const vector<string>& args)
 
 int Command::execLogout(const vector<string>& args)
 {
-    g_user = getGlobalUser();
+    //g_user = getGlobalUser();
     int ret = g_user->logout();
     cout << "已登出！" << endl;
-    g_trans = getGlobalTrans();
+    //g_trans = getGlobalTrans();
     g_trans->setUid(-1);
     return ret;
 }
@@ -163,7 +167,7 @@ int Command::execChangePswd(const vector<string>& args)
         return -1;
     }
 
-    g_user = getGlobalUser();
+    //g_user = getGlobalUser();
     int ret = g_user->changePswd(args[1], args[2]); // -2: not logged, -1: no user, 0: wrong pswd, 1: success
     if (ret == -2)
     {
@@ -189,7 +193,7 @@ int Command::execChangeName(const vector<string>& args) // -2: not logged, -1: n
         return -1;
     }
 
-    g_user = getGlobalUser();
+    //g_user = getGlobalUser();
     int ret = g_user->changeName(args[1]);
     if (ret == -2)
     {
@@ -202,6 +206,41 @@ int Command::execChangeName(const vector<string>& args) // -2: not logged, -1: n
     return ret;
 }
 
+int Command::execNewUser(const vector<string>& args)
+{
+    // newuser $name$ $pswd$
+    if (args.size() < 3)
+    {
+        cerr << "新增用户命令错误，应为：newuser $name$ $pswd$" << endl;
+        return -1;
+    }
+
+    //g_user = getGlobalUser();
+    int ret = g_user->addUser(args[1], args[2]); // -1: illegal name, 0: exist name, 1: success
+    if (ret == -1)
+    {
+        cerr << "用户名中不能出现半角逗号！" << endl;
+    }
+    else if (ret == 0)
+    {
+        cerr << "已存在该用户名！" << endl;
+    }
+    else if (ret == 1)
+    {
+        int uid = -1;
+        string tmp;
+        g_user->getUserInfo(uid, tmp);
+        if (uid != -1)
+        {
+            //g_trans = getGlobalTrans();
+            g_trans->setUid(uid);
+        }
+        cout << "新增用户成功，已登录！" << endl;
+    }
+
+    return 0;
+}
+
 int Command::execDelUser(const vector<string>& args) // -2: not logged, -1: no user, 1: success
 {
     //  deluser $pswd$
@@ -211,7 +250,7 @@ int Command::execDelUser(const vector<string>& args) // -2: not logged, -1: no u
         return -1;
     }
 
-    g_user = getGlobalUser();
+    //g_user = getGlobalUser();
     int ret = g_user->delUser(args[1]);
     if (ret == -2)
     {
@@ -244,12 +283,14 @@ int Command::execAddTrans(const vector<string>& args, TransType transtype)
     }
 
     Transaction trans;
+    string tmp;
+    g_user->getUserInfo(trans.uid, tmp);
     trans.type = transtype;
     UTC2MJD(utc, trans.mjd);
     trans.amount = atof(args[2].c_str());
-    trans.comment = args[3];
+    trans.comment = string(args[3]);
 
-    g_trans = getGlobalTrans();
+    //g_trans = getGlobalTrans();
     int ret = g_trans->addTrans(trans); // -1: not logged, 0: no user, 1: success
     if (ret == -1)
     {
@@ -271,7 +312,7 @@ int Command::execDelTrans(const vector<string>& args)
         return -1;
     }
 
-    g_trans = getGlobalTrans();
+    //g_trans = getGlobalTrans();
     int ret = g_trans->delTrans(atoi(args[1].c_str()) - 1); // -1: not logged, 0: index exceeds range, 1: success
     if (ret == -1)
     {
@@ -307,8 +348,8 @@ int Command::execModTrans(const vector<string>& args)
     trans.type = TransType(atoi(args[3].c_str()));
     UTC2MJD(utc, trans.mjd);
     trans.amount = atof(args[4].c_str());
-    trans.comment = args[5];
-    g_trans = getGlobalTrans();
+    trans.comment = string(args[5]);
+    //g_trans = getGlobalTrans();
     int ret = g_trans->modTrans(atoi(args[1].c_str() - 1), trans); // -1: not logged, 0: index exceeds range, 1: success
     if (ret == -1)
     {
@@ -328,7 +369,7 @@ int Command::execModTrans(const vector<string>& args)
 int Command::execAcquireTrans(const vector<string>& args)
 {
     Transactions translist;
-    g_trans = getGlobalTrans();
+    //g_trans = getGlobalTrans();
     int ret = g_trans->acquire(translist); // -1: not logged, 1: success
     if (ret == -1)
     {
@@ -352,7 +393,7 @@ void Command::printTransactions(const Transactions& translist)
 {
     UTC utc;
     int index = 1;
-    cout << "INDEX" << '\t' << "DATE" << '\t' << "TIME" << '\t' << "TYPE" << '\t' << "AMOUNT" << '\t' << "COMMENT" << endl;
+    cout << "INDEX" << '\t' << "DATE" << "\t\t" << "TIME" << "\t\t" << "TYPE" << '\t' << "AMOUNT" << '\t' << "COMMENT" << endl;
     for (auto translog : translist)
     {
         if (!MJD2UTC(translog.mjd, utc))
@@ -360,6 +401,6 @@ void Command::printTransactions(const Transactions& translist)
             index++; // 即使记录错误，序号不要错乱
             continue;
         }
-        cout << index++ << '\t' << utc.year << '/' << utc.month << '/' << utc.day << '\t' << utc.hour << ':' << utc.minute << ':' << int(utc.second) << '\t' << ((translog.type == TransType::IN) ? "INCOME" : "EXPENSE") << '\t' << translog.amount << '\t' << translog.comment << endl;
+        cout << index++ << '\t' << utc.year << '/' << utc.month << '/' << utc.day << '\t' << utc.hour << ':' << utc.minute << ':' << int(utc.second) << '\t' << ((translog.type == TransType::IN) ? "INCOME" : "EXPENSE") << '\t' << translog.amount << '\t' << translog.comment.c_str() << endl;
     }
 }

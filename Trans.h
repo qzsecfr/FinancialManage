@@ -9,8 +9,8 @@ private:
     Transactions transactionList;
 
 public:
-    Trans() : uid(-1) { g_dataStorage = getGlobalDataStorage(); };
-    ~Trans() { deleteGlobalData(); }
+    Trans() : uid(-1) { /*g_dataStorage = getGlobalDataStorage();*/ };
+
     int setUid(int uid);
     int refreshTransactionList();
     int addTrans(const Transaction& trans);
@@ -19,15 +19,14 @@ public:
     int acquire(Transactions& transList);
 };
 
-static Trans* g_trans = nullptr;
+extern Trans* g_trans;
+extern DataStorage* g_dataStorage;
 
-static Trans* getGlobalTrans()
-{
-    if (g_trans == nullptr)
-    {
-        g_trans = new Trans;
-    }
-    return g_trans;
-}
-
-void deleteGlobalTrans();
+//Trans* getGlobalTrans()
+//{
+//    if (g_trans == nullptr)
+//    {
+//        g_trans = new Trans;
+//    }
+//    return g_trans;
+//}

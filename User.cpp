@@ -2,11 +2,11 @@
 
 int User::login(string name, string pswd)
 {
-    g_dataStorage = getGlobalDataStorage();
+    //g_dataStorage = getGlobalDataStorage();
     int ret = g_dataStorage->verifyUserPswd(name, pswd); // -1:no user, 0:fail, 1:success
     if (ret)
     {
-        this->name = name;
+        this->name = string(name);
         this->uid = g_dataStorage->getUserUid(name);
         this->logged = true;
     }
@@ -29,7 +29,7 @@ int User::changePswd(string prePswd, string newPswd) // -2: not logged, -1: no u
     }
     else
     {
-        g_dataStorage = getGlobalDataStorage();
+        //g_dataStorage = getGlobalDataStorage();
         return g_dataStorage->modifyPswd(name, prePswd, newPswd);
     }
 }
@@ -42,8 +42,13 @@ int User::changeName(string newName) // -2: not logged, -1: no user, 1: success
     }
     else
     {
-        g_dataStorage = getGlobalDataStorage();
-        return g_dataStorage->modifyName(name, newName);
+        //g_dataStorage = getGlobalDataStorage();
+        int ret = g_dataStorage->modifyName(name, newName);
+        if (ret == 1)
+        {
+            name = string(newName);
+        }
+        return ret;
     }
 }
 
@@ -69,17 +74,26 @@ int User::delUser(string pswd) // -2: not logged, -1: no user, 1: success
     }
     else
     {
-        g_dataStorage = getGlobalDataStorage();
+        //g_dataStorage = getGlobalDataStorage();
         int ret = g_dataStorage->delUser(name, pswd);
         logout();
         return ret;
     }
 }
 
-void deleteGlobalUser()
+int User::addUser(string name, string pswd)
 {
-    if (g_user != nullptr)
+    if (logged)
     {
-        delete g_user;
+        logout();
     }
+    //g_dataStorage = getGlobalDataStorage();
+    int ret = g_dataStorage->addUser(name, pswd); // -1: illegal name, 0: exist name, 1: success
+    if (ret == 1)
+    {
+        login(name, pswd);
+    }
+    return ret;
 }
+
+User* g_user = new User();

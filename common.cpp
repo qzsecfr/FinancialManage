@@ -36,7 +36,7 @@ int UTC2MJD(UTC utc, double& mjd)
 		unsigned short D = utc.day;
 		double UT = utc.hour + utc.minute / 60.0 + utc.second / 3600.0;
 		double JD = (int)(365.25 * y) + (int)(30.6001 * (m + 1)) + D + UT / 24.0 + 1720981.5;
-		double mjd = JD - 2400000.5;
+		mjd = JD - 2400000.5;
 	}
 	else {
 		unsigned short y = (unsigned short)(utc.year - 1);
@@ -44,7 +44,7 @@ int UTC2MJD(UTC utc, double& mjd)
 		unsigned short D = utc.day;
 		double UT = utc.hour + utc.minute / 60.0 + utc.second / 3600.0;
 		double JD = (int)(365.25 * y) + (int)(30.6001 * (m + 1)) + D + UT / 24.0 + 1720981.5;
-		double mjd = JD - 2400000.5;
+		mjd = JD - 2400000.5;
 	}
 	return 1;
 }
