@@ -15,7 +15,8 @@ string help_info = "\
 \t\t支出 expense $y/m/d-h:m:s$ $amount$ $comment$\n\
 \t\t删除交易 deltrans $no.$\n\
 \t\t修改交易 modtrans $no.$ $y/m/d-h:m:s$ $type$ $amount$ $comment$[type:0-IN, 1-OUT]\n\
-\t\t查看交易 acquire\n";
+\t\t查看交易 acquire\n\
+\t\t查看报告 report\n";
 
 extern DataStorage* g_dataStorage;
 extern User* g_user;

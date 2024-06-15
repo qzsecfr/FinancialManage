@@ -19,6 +19,7 @@ enum COMTYPE
     DELTRANS,
     MODTRANS,
     ACQUIRE,
+    REPORT,
 };
 
 class Command
@@ -39,8 +40,10 @@ private:
     int execDelTrans(const vector<string>& args);
     int execModTrans(const vector<string>& args);
     int execAcquireTrans(const vector<string>& args);
+    int execReport(const vector<string>& args);
 
     void printTransactions(const Transactions& translist);
+    void printReport(const Transactions& translist);
 
 public:
     int processCommand(string command);

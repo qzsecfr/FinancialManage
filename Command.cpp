@@ -1,4 +1,5 @@
 #include "Command.h"
+#include <iomanip>
 
 int Command::processCommand(string command)
 {
@@ -58,6 +59,7 @@ COMTYPE Command::com2Type(string com)
     if (0 == strcmp(com.c_str(), "deltrans")) return COMTYPE::DELTRANS;
     if (0 == strcmp(com.c_str(), "modtrans")) return COMTYPE::MODTRANS;
     if (0 == strcmp(com.c_str(), "acquire")) return COMTYPE::ACQUIRE;
+    if (0 == strcmp(com.c_str(), "report")) return COMTYPE::REPORT;
 
     return COMTYPE::INVALID;
 }
@@ -78,6 +80,7 @@ int Command::commandDistribute(const vector<string>& args)
     //      deltrans $no.$
     //      modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-IN, 1-OUT]
     //      acquire
+    //      report
     if (args.empty())
     {
         return -1;
@@ -108,6 +111,8 @@ int Command::commandDistribute(const vector<string>& args)
         return execModTrans(args);
     case COMTYPE::ACQUIRE:
         return execAcquireTrans(args);
+    case COMTYPE::REPORT:
+        return execReport(args);
     default:
         break;
     }
@@ -259,6 +264,8 @@ int Command::execDelUser(const vector<string>& args) // -2: not logged, -1: no u
     else if (ret == 1)
     {
         cout << "账户注销成功！" << endl;
+        g_trans->setUid(-1);
+        
     }
     return ret;
 }
@@ -279,6 +286,11 @@ int Command::execAddTrans(const vector<string>& args, TransType transtype)
     if (!string2UTC(args[1], utc))
     {
         cerr << "输入日期时间格式错误，应为：$y/m/d-h:m:s$" << endl;
+        return 0;
+    }
+    if (atof(args[2].c_str()) < 0)
+    {
+        cerr << "输入的金额不能为负数！" << endl;
         return 0;
     }
 
@@ -343,6 +355,11 @@ int Command::execModTrans(const vector<string>& args)
         cerr << "输入日期时间格式错误，应为：$y/m/d-h:m:s$" << endl;
         return 0;
     }
+    if (atof(args[4].c_str()) < 0)
+    {
+        cerr << "输入的金额不能为负数！" << endl;
+        return 0;
+    }
 
     Transaction trans;
     trans.type = TransType(atoi(args[3].c_str()));
@@ -389,11 +406,35 @@ int Command::execAcquireTrans(const vector<string>& args)
     return ret;
 }
 
+int Command::execReport(const vector<string>& args)
+{
+    Transactions translist;
+    //g_trans = getGlobalTrans();
+    int ret = g_trans->acquire(translist); // -1: not logged, 1: success
+    if (ret == -1)
+    {
+        cerr << "尚未登陆！" << endl;
+    }
+    else if (ret == 1)
+    {
+        if (translist.empty())
+        {
+            cout << "目前没有交易记录。" << endl;
+        }
+        else
+        {
+            printReport(translist);
+        }
+    }
+    return ret;
+}
+
 void Command::printTransactions(const Transactions& translist)
 {
     UTC utc;
     int index = 1;
-    cout << "INDEX" << '\t' << "DATE" << "\t\t" << "TIME" << "\t\t" << "TYPE" << '\t' << "AMOUNT" << '\t' << "COMMENT" << endl;
+    // width: INDEX:8 DATE:12 TIME:10 TYPE:8 AMOUNT:8
+    cout << left << setw(8) << "序号" << setw(12) << "日期" << setw(10) << "时间" << setw(9) << "类型" << setw(8) << "金额"  << "备注" << endl;
     for (auto translog : translist)
     {
         if (!MJD2UTC(translog.mjd, utc))
@@ -401,6 +442,26 @@ void Command::printTransactions(const Transactions& translist)
             index++; // 即使记录错误，序号不要错乱
             continue;
         }
-        cout << index++ << '\t' << utc.year << '/' << utc.month << '/' << utc.day << '\t' << utc.hour << ':' << utc.minute << ':' << int(utc.second) << '\t' << ((translog.type == TransType::IN) ? "INCOME" : "EXPENSE") << '\t' << translog.amount << '\t' << translog.comment.c_str() << endl;
+        cout << left << setw(8) << index++
+            << setw(4) << utc.year << setw(1) << '/' 
+            << right << setfill('0') << setw(2) << utc.month << setw(1) << '/'
+            << right << setfill('0') << setw(2) << utc.day << "  "
+            << right << setfill('0') << setw(2) << utc.hour << setw(1) << ':'
+            << right << setfill('0') << setw(2) << utc.minute << setw(1) << ':'
+            << right << setfill('0') << setw(2) << int(utc.second) << "  "
+            << left << setfill(' ') << setw(9) << ((translog.type == TransType::IN) ? "INCOME" : "EXPENSE")
+            << setw(8) << translog.amount 
+            << translog.comment.c_str() << endl;
     }
+}
+
+void Command::printReport(const Transactions& translist)
+{
+    double income = 0, expense = 0;
+    for (auto translog : translist)
+    {
+        income += translog.type ? 0 : translog.amount;
+        expense += translog.type ? translog.amount : 0;
+    }
+    cout << "用户总收入为：" << income << "，总支出为：" << expense << "，总共结余：" << income - expense << endl;
 }

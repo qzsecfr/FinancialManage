@@ -262,7 +262,17 @@ int DataStorage::getUserTransactions(int uid, Transactions& transactionlist)
     {
         return 0; // no user;
     }
-    transactionlist = transactions[uid]; // 数据有风险！！
+    transactionlist.clear();
+    Transaction tmplog;
+    for (const auto &translog : transactions[uid])
+    {
+        tmplog.uid = translog.uid;
+        tmplog.type = translog.type;
+        tmplog.mjd = translog.mjd;
+        tmplog.amount = translog.amount;
+        tmplog.comment = string(translog.comment);
+        transactionlist.push_back(tmplog);
+    }
     return 1;
 }
 
