@@ -16,7 +16,10 @@ string help_info = "\
 \t\t删除交易 deltrans $no.$\n\
 \t\t修改交易 modtrans $no.$ $y/m/d-h:m:s$ $type$ $amount$ $comment$[type:0-IN, 1-OUT]\n\
 \t\t查看交易 acquire\n\
-\t\t查看报告 report\n";
+\t\t查看报告 report\n\
+\t\t导出数据 export $filename$\n\
+\t\t导入数据 import $filename$\n\
+\t\t\t数据文件格式：$y/M/d-h:m:s$,$type$,$amount$,$comment$\n";
 
 extern DataStorage* g_dataStorage;
 extern User* g_user;

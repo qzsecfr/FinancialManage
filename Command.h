@@ -20,6 +20,8 @@ enum COMTYPE
     MODTRANS,
     ACQUIRE,
     REPORT,
+    EXPORT,
+    IMPORT,
 };
 
 class Command
@@ -41,9 +43,14 @@ private:
     int execModTrans(const vector<string>& args);
     int execAcquireTrans(const vector<string>& args);
     int execReport(const vector<string>& args);
+    int execExport(const vector<string>& args);
+    int execImport(const vector<string>& args);
 
     void printTransactions(const Transactions& translist);
     void printReport(const Transactions& translist);
+
+    int exportCSV(string filename, const Transactions& translist);
+    int importCSV(string filename, Transactions& translist);
 
 public:
     int processCommand(string command);

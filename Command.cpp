@@ -1,5 +1,6 @@
 #include "Command.h"
 #include <iomanip>
+#include <fstream>
 
 int Command::processCommand(string command)
 {
@@ -60,6 +61,8 @@ COMTYPE Command::com2Type(string com)
     if (0 == strcmp(com.c_str(), "modtrans")) return COMTYPE::MODTRANS;
     if (0 == strcmp(com.c_str(), "acquire")) return COMTYPE::ACQUIRE;
     if (0 == strcmp(com.c_str(), "report")) return COMTYPE::REPORT;
+    if (0 == strcmp(com.c_str(), "export")) return COMTYPE::EXPORT;
+    if (0 == strcmp(com.c_str(), "import")) return COMTYPE::IMPORT;
 
     return COMTYPE::INVALID;
 }
@@ -81,6 +84,8 @@ int Command::commandDistribute(const vector<string>& args)
     //      modtrans $no.$ $y/m/f-h:m:s$ $type$ $amount$ $comment$ [type:0-IN, 1-OUT]
     //      acquire
     //      report
+    //      export $filename$
+    //      import $filename$
     if (args.empty())
     {
         return -1;
@@ -113,6 +118,10 @@ int Command::commandDistribute(const vector<string>& args)
         return execAcquireTrans(args);
     case COMTYPE::REPORT:
         return execReport(args);
+    case COMTYPE::EXPORT:
+        return execExport(args);
+    case COMTYPE::IMPORT:
+        return execImport(args);
     default:
         break;
     }
@@ -429,6 +438,78 @@ int Command::execReport(const vector<string>& args)
     return ret;
 }
 
+int Command::execExport(const vector<string>& args)
+{
+    if (args.size() < 2)
+    {
+        cerr << "导出数据命令错误，应为：export $filename$" << endl;
+        return -1;
+    }
+    Transactions translist;
+    //g_trans = getGlobalTrans();
+    int ret = g_trans->acquire(translist); // -1: not logged, 1: success
+    if (ret == -1)
+    {
+        cerr << "尚未登陆！" << endl;
+    }
+    else if (ret == 1)
+    {
+        if (translist.empty())
+        {
+            cout << "目前没有交易记录。" << endl;
+        }
+        else
+        {
+            ret = exportCSV(args[1], translist);
+            if (!ret)
+            {
+                cerr << "文件无法打开！" << endl;
+            }
+            else
+            {
+                cout << "文件导出成功！" << endl;
+            }
+        }
+    }
+    return ret;
+}
+
+int Command::execImport(const vector<string>& args)
+{
+    if (args.size() < 2)
+    {
+        cerr << "导出数据命令错误，应为：export $filename$" << endl;
+        return -1;
+    }
+    int uid = -1;
+    string tmp;
+    g_user->getUserInfo(uid, tmp);
+    if (uid == -1)
+    {
+        cerr << "尚未登陆！" << endl;
+        return 0;
+    }
+    else
+    {
+        Transactions translist;
+        int ret = importCSV(args[1], translist);
+        if (!ret)
+        {
+            cerr << "文件无法打开！" << endl;
+        }
+        else
+        {
+            for (auto& trans : translist)
+            {
+                trans.uid = uid;
+                ret |= g_trans->addTrans(trans);
+            }
+            cout << "文件导入成功！" << endl;
+        }
+        return ret;
+    }
+}
+
 void Command::printTransactions(const Transactions& translist)
 {
     UTC utc;
@@ -464,4 +545,47 @@ void Command::printReport(const Transactions& translist)
         expense += translog.type ? translog.amount : 0;
     }
     cout << "用户总收入为：" << income << "，总支出为：" << expense << "，总共结余：" << income - expense << endl;
+}
+
+int Command::exportCSV(string filename, const Transactions& translist)
+{
+    // CSV format: (no uid info)
+    // $y/M/d-h:m:s$,$type$,$amount$,$comment$
+    fstream file;
+    file.open(filename, ios::out);
+    if (!file.is_open())
+    {
+        return 0; // file cannot be openned
+    }
+    UTC utc;
+    for (const auto& transaction : translist)
+    {
+        MJD2UTC(transaction.mjd, utc);
+        file << utc.year << '/' << utc.month << '/' << utc.day << '-' << utc.hour << ':' << utc.minute << ':' << utc.second << "," << transaction.type << "," << transaction.amount << "," << transaction.comment.c_str() << std::endl;
+    }
+
+    return 1;
+}
+
+int Command::importCSV(string filename, Transactions& translist)
+{
+    fstream file;
+    bool fileOpen = false;
+    file.open(filename, ios::in);
+    fileOpen = file.is_open();
+    if (!fileOpen)
+    {
+        return 0;
+    }
+    string tmpline;
+    Transaction transaction;
+    UTC utc;
+    while (!file.eof())
+    {
+        getline(file, tmpline);
+        int num = sscanf(tmpline.c_str(), "%d/%d/%d-%d:%d:%lf,%d,%lf,%[^,]", &utc.year, &utc.month, &utc.day, &utc.hour, &utc.minute, &utc.second, &transaction.type, &transaction.amount, transaction.comment.c_str());
+        UTC2MJD(utc, transaction.mjd);
+        if (num > 8) translist.push_back(transaction);
+    }
+    return 1;
 }
